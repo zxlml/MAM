@@ -1,4 +1,4 @@
-# Reproduction of "Meta Additive Model: Learning Theory Analysis and Applications" 
+# Reproduction of "Meta Additive Model: Interpretable Sparse Learning With Auto Weighting" 
 
 ## Setups
 
