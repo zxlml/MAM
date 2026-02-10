@@ -1,4 +1,4 @@
-# Reproduction of "Meta Additive Model: Interpretable Sparse Learning With Auto Weighting" 
+# Reproduction of "Meta Additive Model"
 
 ## Setups
 
