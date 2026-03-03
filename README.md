@@ -1,4 +1,4 @@
-# Reproduction of "Meta Additive Model"
+# Reproduction of Meta Additive Model
 
 ## Setups
 
