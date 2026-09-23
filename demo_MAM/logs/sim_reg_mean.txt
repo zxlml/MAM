@@ -1,0 +1,51 @@
+﻿python : 2026-09-23 17:47:53,666 Epoch 1	lr 0.05	Val Loss 111.0950	Train Loss 2.3732	Test MSE 1.8825
+At line:22 char:28
++ ... in $runs) { python main.py $r.a.Split(' ') --number 2000 --dimension  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-09-23 17:4...Test MSE 1.8825:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-09-23 17:48:05,422 Epoch 50	lr 0.05	Val Loss 0.0445	Train Loss 0.3053	Test MSE 0.0388
+2026-09-23 17:48:05,423 Epoch 50	selected variables 100/100
+2026-09-23 17:48:17,434 Epoch 100	lr 0.05	Val Loss 0.0347	Train Loss 0.3057	Test MSE 0.0310
+2026-09-23 17:48:17,435 Epoch 100	selected variables 100/100
+2026-09-23 17:48:29,488 Epoch 150	lr 0.05	Val Loss 0.0268	Train Loss 0.3099	Test MSE 0.0233
+2026-09-23 17:48:29,489 Epoch 150	selected variables 100/100
+2026-09-23 17:48:41,509 Epoch 200	lr 0.05	Val Loss 0.0220	Train Loss 0.3163	Test MSE 0.0190
+2026-09-23 17:48:41,511 Epoch 200	selected variables 100/100
+2026-09-23 17:48:53,568 Epoch 250	lr 0.05	Val Loss 0.0191	Train Loss 0.3205	Test MSE 0.0168
+2026-09-23 17:48:53,568 Epoch 250	selected variables 100/100
+2026-09-23 17:49:05,626 Epoch 300	lr 0.05	Val Loss 0.0177	Train Loss 0.3252	Test MSE 0.0156
+2026-09-23 17:49:05,627 Epoch 300	selected variables 99/100
+2026-09-23 17:49:17,807 Epoch 350	lr 0.05	Val Loss 0.0175	Train Loss 0.3267	Test MSE 0.0153
+2026-09-23 17:49:17,808 Epoch 350	selected variables 99/100
+2026-09-23 17:49:31,167 Epoch 400	lr 0.05	Val Loss 0.0175	Train Loss 0.3276	Test MSE 0.0156
+2026-09-23 17:49:31,168 Epoch 400	selected variables 100/100
+2026-09-23 17:49:43,465 Epoch 450	lr 0.05	Val Loss 0.0173	Train Loss 0.3272	Test MSE 0.0152
+2026-09-23 17:49:43,465 Epoch 450	selected variables 100/100
+2026-09-23 17:49:56,351 Epoch 500	lr 0.05	Val Loss 0.0172	Train Loss 0.3266	Test MSE 0.0151
+2026-09-23 17:49:56,352 Epoch 500	selected variables 98/100
+2026-09-23 17:50:08,715 Epoch 550	lr 0.005	Val Loss 0.0174	Train Loss 0.3230	Test MSE 0.0152
+2026-09-23 17:50:08,715 Epoch 550	selected variables 100/100
+2026-09-23 17:50:20,785 Epoch 600	lr 0.005	Val Loss 0.0196	Train Loss 0.3150	Test MSE 0.0172
+2026-09-23 17:50:20,786 Epoch 600	selected variables 100/100
+2026-09-23 17:50:33,067 Epoch 650	lr 0.005	Val Loss 0.0255	Train Loss 0.3072	Test MSE 0.0228
+2026-09-23 17:50:33,068 Epoch 650	selected variables 100/100
+2026-09-23 17:50:43,711 Epoch 700	lr 0.005	Val Loss 0.0320	Train Loss 0.3040	Test MSE 0.0288
+2026-09-23 17:50:43,712 Epoch 700	selected variables 100/100
+2026-09-23 17:50:53,295 Epoch 750	lr 0.005	Val Loss 0.0367	Train Loss 0.3020	Test MSE 0.0332
+2026-09-23 17:50:53,295 Epoch 750	selected variables 100/100
+2026-09-23 17:51:02,891 Epoch 800	lr 0.005	Val Loss 0.0397	Train Loss 0.3016	Test MSE 0.0358
+2026-09-23 17:51:02,892 Epoch 800	selected variables 100/100
+2026-09-23 17:51:12,408 Epoch 850	lr 0.0005	Val Loss 0.0400	Train Loss 0.3007	Test MSE 0.0361
+2026-09-23 17:51:12,409 Epoch 850	selected variables 100/100
+2026-09-23 17:51:21,954 Epoch 900	lr 0.0005	Val Loss 0.0407	Train Loss 0.3005	Test MSE 0.0367
+2026-09-23 17:51:21,955 Epoch 900	selected variables 100/100
+2026-09-23 17:51:31,961 Epoch 950	lr 0.0005	Val Loss 0.0413	Train Loss 0.3004	Test MSE 0.0373
+2026-09-23 17:51:31,961 Epoch 950	selected variables 100/100
+2026-09-23 17:51:41,461 Epoch 1000	lr 0.0005	Val Loss 0.0419	Train Loss 0.3003	Test MSE 0.0379
+2026-09-23 17:51:41,462 Epoch 1000	selected variables 100/100
+2026-09-23 17:51:41,462 Finished. best MSE = 0.0151 @ epoch 500; selected variables 100/100
+=== MAM simulation | task=regression scenario=mean n=2000 p=100 (features=300) seed=1 ===
+[MAM]      best Test MSE = 0.0151 @ epoch 500, selected variables 100/100
+[Baseline] best Test MSE = 0.0443  (unweighted ERM)

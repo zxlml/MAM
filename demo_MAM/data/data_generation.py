@@ -34,7 +34,7 @@ def bsplineBasis_j(x, t, j, M):
             Bj = Bj + (t[j + M] - x) * bsplineBasis_j(x, t, j+1, M-1) / denom2;
     return Bj
 
-def bsplinebasis(x, t, M):   
+def bsplinebasis(x, t, M):
     m = len(x)
     # repeat the first and the last knots m times
     t1=list(t[0]*np.ones(M-1))
@@ -44,37 +44,65 @@ def bsplinebasis(x, t, M):
     B = np.zeros([m, len(t) - M])
     for j in range(0,len(t)- M): #is the same as j=1 : K+M, K is the number of interior knots
         B[:,j] = bsplineBasis_j( x, t, j, M )# j-1 0 <= j <= len(tt) - n - 2.
-    # print(B)
+    # FIX: the half-open intervals (x >= t[j]) & (x < t[j+1]) assign zero weight to
+    # x == t[-1] (the right boundary). Clamp those samples onto the last basis so the
+    # partition of unity (row sum == 1) holds on the closed interval.
+    right_edge = (x == t[-1])
+    if np.any(right_edge):
+        B[right_edge, :] = 0.0
+        B[right_edge, -1] = 1.0
     return B
 
     
-def transform_splines(trainX,  validX, testX,r):
+def transform_splines(trainX,  validX, testX,r, whiten_tol=1e-10):
 # =============================================================================
 #     Suggestion: r=3 for regression tasks and r=5 for classification tasks
+#  FIX 1: the knot range [min, max] is taken from the TRAIN split only and
+#         reused for valid/test. The original code re-fitted knots per split,
+#         so the three splits were mapped by *different* feature maps and the
+#         additive model could not learn a consistent rule.
+#  FIX 2: each Bernstein block is whitened by an SVD fitted on the TRAIN block
+#         (directions with sigma <= whiten_tol * sigma_max are zeroed out).
+#         The Bernstein basis spans the constant function, so every block
+#         contains an all-ones direction -> the raw design matrix has exact
+#         cross-block collinearity (condition number ~1e15), which makes the
+#         convex lower-level problem numerically unsolvable. Whitening is an
+#         orthogonal transform *within* each block, so the model class and the
+#         group-L2,1 penalty (invariant to orthogonal within-group transforms)
+#         are preserved; only the numerically unidentifiable directions are
+#         removed.
 # =============================================================================
-    X_trn_spline = np.ones([trainX.shape[0],trainX.shape[1]*r])
-    X_val_spline = np.ones([validX.shape[0],validX.shape[1]*r])
-    X_tst_spline = np.ones([testX.shape[0],testX.shape[1]*r])
-    
-    for j in range(0,len(trainX[0])):
-      min_k_trn = min(trainX[:,j])
-      max_k_trn = max(trainX[:,j])
-      knot_trn  = [ min_k_trn,max_k_trn]
-      X_trn_spline[:,(j)*r:(j+1)*r] = bsplinebasis(trainX[:,j], knot_trn, r)
-      # print(X_trn_spline[:,j*r:(j+1)*r])
-                    
-      min_k_val = min(validX[:,j])
-      max_k_val = max(validX[:,j])
-      knot_val  = [ min_k_val,max_k_val]
-      X_val_spline[:,(j)*r:(j+1)*r] = bsplinebasis(validX[:,j], knot_val, r)
-      # print(X_val_spline[:,j*r:(j+1)*r])
-            
-      min_k_tst = min(testX[:,j])
-      max_k_tst = max(testX[:,j])
-      knot_tst  = [ min_k_tst,max_k_tst]
-      X_tst_spline[:,(j)*r:(j+1)*r] = bsplinebasis(testX[:,j], knot_tst, r)
-      # print(X_tst_spline[:,j*r:(j+1)*r])
-    
+    n_tr, p = trainX.shape[0], trainX.shape[1]
+    n_va, n_te = validX.shape[0], testX.shape[0]
+    X_trn_spline = np.ones([n_tr, p*r])
+    X_val_spline = np.ones([n_va, p*r])
+    X_tst_spline = np.ones([n_te, p*r])
+
+    for j in range(0, p):
+        # knots from the TRAIN split only -> identical feature map for all splits
+        min_k_trn = min(trainX[:, j])
+        max_k_trn = max(trainX[:, j])
+        knot_trn  = [ min_k_trn, max_k_trn ]
+
+        B_trn = bsplinebasis(trainX[:, j], knot_trn, r)
+        B_val = bsplinebasis(validX[:, j], knot_trn, r)
+        B_tst = bsplinebasis(testX[:, j],  knot_trn, r)
+
+        # SVD whitening fitted on the train block only
+        U, S, Vt = np.linalg.svd(B_trn, full_matrices=False)
+        S_inv = np.where(S > whiten_tol * S[0], 1.0 / np.maximum(S, 1e-300), 0.0)
+        W = (Vt.T * S_inv)            # (r, r) whitening map, zero on dead dirs
+
+        # FIX 3: plain SVD whitening gives every column unit L2 NORM (= std
+        # 1/sqrt(n)), which makes the design matrix ~40x smaller than the
+        # conventional unit-variance scale and stalls plain SGD solvers (the
+        # bias reaches the class-prior solution first, then gradients vanish).
+        # Rescale by sqrt(n_train) so each surviving column has ~unit std.
+        scale = np.sqrt(n_tr)
+        X_trn_spline[:, j*r:(j+1)*r] = (B_trn @ W) * scale
+        X_val_spline[:, j*r:(j+1)*r] = (B_val @ W) * scale
+        X_tst_spline[:, j*r:(j+1)*r] = (B_tst @ W) * scale
+
     return X_trn_spline,X_val_spline,X_tst_spline
 
 class Regression:
@@ -367,17 +395,24 @@ class Classfication_multi:
 
         return (trainX, trainY), (validX, validY), (testX, testY)
 
-def data_process(trainX, trainY, validX, validY,testX,batch,r):
+def data_process(trainX, trainY, validX, validY,testX,batch,r,seed=None):
     trainX, validX, testX = transform_splines(trainX, validX, testX,r)
     train_data = Data.TensorDataset(torch.tensor(trainX), torch.tensor(trainY))
     val_data = Data.TensorDataset(torch.tensor(validX), torch.tensor(validY))
     # test_data = Data.TensorDataset( torch.tensor(testX), torch.tensor(testY))
-    
+
+    # Explicit per-loader generators: since torch 2.x the shuffle sampler draws
+    # its seed lazily from the global RNG, so without an explicit generator the
+    # batch order is not reproducible even after manual_seed().
+    g_train = torch.Generator().manual_seed(seed if seed is not None else 0)
+    g_val = torch.Generator().manual_seed(seed if seed is not None else 0)
+
     train_loader = Data.DataLoader(
     dataset=train_data,
     batch_size=batch,
     shuffle=True,
     num_workers=0,
+    generator=g_train,
     )
 
     val_loader = Data.DataLoader(
@@ -385,6 +420,7 @@ def data_process(trainX, trainY, validX, validY,testX,batch,r):
     batch_size=batch,
     shuffle=True,
     num_workers=0,
+    generator=g_val,
     )
     
 
@@ -392,85 +428,58 @@ def data_process(trainX, trainY, validX, validY,testX,batch,r):
     return train_loader,val_loader, testX
 
 
-def generate_regression(number=1000,dimension=100,noise_type='Gaussian'):
+def _set_seed(seed):
+    # Reproducible simulation: fix numpy / torch / random seeds when requested.
+    if seed is None:
+        return
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    import random as _random
+    _random.seed(seed)
+
+
+def generate_regression(number=1000,dimension=100,noise_type='Gaussian',seed=None):
+    # NOTE: the original implementation regenerated the whole dataset `number`
+    # times inside a loop and silently kept only the last replicate, which was
+    # extremely wasteful (O(number^2 * dimension) samples drawn) and made the
+    # effective sample size ambiguous. We now draw ONE train/valid/test split
+    # of `number` samples each, following the TSpAM simulation protocol.
+    _set_seed(seed)
     N, p = number,dimension
     noise = noise_type
     reg_data = Regression(N, p, noise=noise)
 
-    train_x, train_y = [], []
-    valid_x, valid_y = [], []
-    test_x,  test_y  = [], []
-
-    for i in range(number):
-        (trainX, trainY), (validX, validY), (testX, testY) = reg_data.generate_data()
-        train_x.append(trainX)
-        train_y.append(trainY)
-        valid_x.append(validX)
-        valid_y.append(validY)
-        test_x.append(testX)
-        test_y.append(testY)
-    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=3)
+    (trainX, trainY), (validX, validY), (testX, testY) = reg_data.generate_data()
+    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=3,seed=seed)
     return train_loder,val_loder, testX, testY
 
-def generate_corrupted_classification(number=1000,dimension=100,percentage=0.3):
+def generate_corrupted_classification(number=1000,dimension=100,percentage=0.3,seed=None):
+    _set_seed(seed)
     N, p = number,dimension
     frac = percentage
-    reg_data = Classfication_corrupted(N, p, frac=frac)
+    cls_data = Classfication_corrupted(N, p, frac=frac)
 
-    train_x, train_y = [], []
-    valid_x, valid_y = [], []
-    test_x,  test_y  = [], []
-
-
-    for i in range(number):
-        (trainX, trainY), (validX, validY),  (testX, testY) = reg_data.generate_data()
-        train_x.append(trainX)
-        train_y.append(trainY)
-        valid_x.append(validX)
-        valid_y.append(validY)
-        test_x.append(testX)
-        test_y.append(testY)
-    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5)
+    (trainX, trainY), (validX, validY), (testX, testY) = cls_data.generate_data()
+    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5,seed=seed)
     return train_loder,val_loder, testX, testY
 
 
-def generate_imbalanced_classification(number=1000,dimension=100,ratio=0.15):
+def generate_imbalanced_classification(number=1000,dimension=100,ratio=0.15,seed=None):
+    _set_seed(seed)
     N, p = number,dimension
     frac = ratio
-    reg_data = Classfication_imbalance(N, p, frac=frac)
+    cls_data = Classfication_imbalance(N, p, frac=frac)
 
-    train_x, train_y = [], []
-    valid_x, valid_y = [], []
-    test_x,  test_y  = [], []
+    (trainX, trainY), (validX, validY), (testX, testY) = cls_data.generate_data()
+    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5,seed=seed)
+    return train_loder,val_loder, testX, testY
 
-
-    for i in range(number):
-        (trainX, trainY), (validX, validY),  (testX, testY) = reg_data.generate_data()
-        train_x.append(trainX)
-        train_y.append(trainY)
-        valid_x.append(validX)
-        valid_y.append(validY)
-        test_x.append(testX)
-        test_y.append(testY)
-    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5)
-    return train_loder,val_loder,testX, testY
-
-def generate_multi_classification(number=1000,dimension=100,ratio=0.15):
+def generate_multi_classification(number=1000,dimension=100,ratio=0.15,seed=None):
+    _set_seed(seed)
     N, p = number,dimension
     frac = ratio
-    reg_data = Classfication_multi(N, p, frac=frac)
+    cls_data = Classfication_multi(N, p, frac=frac)
 
-    train_x, train_y = [], []
-    valid_x, valid_y = [], []
-    test_x,  test_y  = [], []
-
-    for i in range(number):
-        (trainX, trainY), (validX, validY), (testX, testY) = reg_data.generate_data()
-        train_x.append(trainX)
-        train_y.append(trainY)
-        valid_x.append(validX)
-        valid_y.append(validY)
-        test_x.append(testX)
-        test_y.append(testY)
-    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5)
+    (trainX, trainY), (validX, validY), (testX, testY) = cls_data.generate_data()
+    train_loder,val_loder,testX =data_process(trainX, trainY, validX, validY,testX,batch=200,r=5,seed=seed)
     return train_loder,val_loder, testX, testY

@@ -1,0 +1,32 @@
+﻿python : 2026-09-23 18:03:45,613 Epoch 1	lr 0.05	Val Loss 1.0554	Train Loss 0.4547	Test Acc 0.5030	Per-class [0.007, 0.
+999]
+At line:22 char:28
++ ... in $runs) { python main.py $r.a.Split(' ') --number 2000 --dimension  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-09-23 18:0... [0.007, 0.999]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-09-23 18:03:55,927 Epoch 50	lr 0.05	Val Loss 0.4112	Train Loss 0.2246	Test Acc 0.8225	Per-class [0.662, 0.983]
+2026-09-23 18:03:55,928 Epoch 50	selected variables 100/100
+2026-09-23 18:04:05,985 Epoch 100	lr 0.05	Val Loss 0.3756	Train Loss 0.2570	Test Acc 0.8850	Per-class [0.778, 0.992]
+2026-09-23 18:04:05,986 Epoch 100	selected variables 100/100
+2026-09-23 18:04:16,004 Epoch 150	lr 0.05	Val Loss 0.3706	Train Loss 0.3075	Test Acc 0.9265	Per-class [0.856, 0.997]
+2026-09-23 18:04:16,006 Epoch 150	selected variables 83/100
+2026-09-23 18:04:26,302 Epoch 200	lr 0.05	Val Loss 0.3821	Train Loss 0.3513	Test Acc 0.9450	Per-class [0.892, 0.998]
+2026-09-23 18:04:26,303 Epoch 200	selected variables 55/100
+2026-09-23 18:04:36,370 Epoch 250	lr 0.05	Val Loss 0.3957	Train Loss 0.3707	Test Acc 0.9455	Per-class [0.894, 0.997]
+2026-09-23 18:04:36,370 Epoch 250	selected variables 40/100
+2026-09-23 18:04:46,743 Epoch 300	lr 0.005	Val Loss 0.4003	Train Loss 0.3518	Test Acc 0.9210	Per-class [0.844, 0.998]
+2026-09-23 18:04:46,744 Epoch 300	selected variables 100/100
+2026-09-23 18:04:57,208 Epoch 350	lr 0.005	Val Loss 0.4101	Train Loss 0.3237	Test Acc 0.8750	Per-class [0.75, 1.0]
+2026-09-23 18:04:57,209 Epoch 350	selected variables 100/100
+2026-09-23 18:05:08,995 Epoch 400	lr 0.005	Val Loss 0.4191	Train Loss 0.3063	Test Acc 0.8400	Per-class [0.68, 1.0]
+2026-09-23 18:05:08,996 Epoch 400	selected variables 100/100
+2026-09-23 18:05:21,879 Epoch 450	lr 0.0005	Val Loss 0.4265	Train Loss 0.2966	Test Acc 0.8160	Per-class [0.632, 1.0]
+2026-09-23 18:05:21,880 Epoch 450	selected variables 100/100
+2026-09-23 18:05:34,875 Epoch 500	lr 0.0005	Val Loss 0.4462	Train Loss 0.2778	Test Acc 0.7645	Per-class [0.529, 1.0]
+2026-09-23 18:05:34,876 Epoch 500	selected variables 100/100
+2026-09-23 18:05:34,877 Finished. best Acc = 0.9455 @ epoch 250; selected variables 100/100
+=== MAM simulation | task=classification scenario=imbalance n=2000 p=100 (features=500) seed=1 ===
+[MAM]      best Test Acc = 0.9455 @ epoch 250, selected variables 100/100
+[Baseline] best Test Acc = 0.8825  (unweighted ERM)
