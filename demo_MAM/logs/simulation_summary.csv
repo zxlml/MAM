@@ -1,0 +1,7 @@
+scenario,task,noise_or_scenario,metric,mam_value,erm_baseline_value,improvement,mam_best_epoch,selected_variables,seed,number,dimension,epochs,log_file
+eps^A (mean noise),regression,mean,Test MSE,0.0151,0.0443,-66%,500,100/100,1,2000,100,1000,sim_reg_mean.txt
+eps^B (modal noise),regression,modal,Test MSE,0.0048,0.2733,-98%,550,100/100,1,2000,100,1000,sim_reg_modal.txt
+eps^C (studentT noise),regression,studentT,Test MSE,0.0068,0.0598,-89%,550,100/100,1,2000,100,1000,sim_reg_studentT.txt
+class imbalance,classification,imbalance (ratio 0.15),Test Acc,0.9455,0.8825,+6.3pt,250,100/100,1,2000,100,500,sim_cls_imbalance.txt
+label corruption,classification,corrupted (15%),Test Acc,0.9355,0.8345,+10.1pt,250,100/100,1,2000,100,500,sim_cls_corrupted.txt
+imbalance + corruption,classification,multi,Test Acc,0.7225,0.6515,+7.1pt,150,100/100,1,2000,100,500,sim_cls_multi.txt
