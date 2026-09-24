@@ -23,7 +23,7 @@ A faithful **reproduction and engineering refactoring of Meta Additive Models (M
 
 * **[2026-09]** 🚀 Major refactoring: differentiable group-lasso prox, bi-level loop rewritten after MW-Net's engineering, train-split knots + SVD whitening for the spline basis.
 * **[2026-09]** ✅ Full test suite added (unit + functional, 45 tests).
-* **[2026-09]** 📊 Paper-scale simulations (n=2000, p=100) reproduce the paper's qualitative claims — see [Experimental Results](#-experimental-results).
+* **[2026-09]** 📊 Paper-scale simulations (n=2000, p=100) completed — raw logs and a summary CSV are available under `demo_MAM/logs/`.
 
 ## 📑 Table of Contents
 
@@ -33,7 +33,6 @@ A faithful **reproduction and engineering refactoring of Meta Additive Models (M
 * [⚡ Quick Start](#-quick-start)
 * [🏗️ Architecture](#️-architecture)
 * [🧠 Algorithm Design](#-algorithm-design)
-* [📁 Experimental Results](#-experimental-results)
 * [🧪 Testing](#-testing)
 * [☑️ Todo](#️-todo)
 * [🙏 Acknowledgements](#-acknowledgements)
@@ -144,21 +143,6 @@ lower:  beta_hat(theta) = prox_{lam*eta*Omega}( beta - eta * (1/n) sum_i
 * **What is borrowed from MW-Net.** Single unrolled inner step (`create_graph=True`), weighting net evaluated on detached costs (`vnet(cost.data)`), one validation batch per training batch from a persistent iterator (StopIteration recycling), Adam on the weighting net, and warm-up epochs with uniform weights.
 * **Numerical fixes for the spline basis.** Knots are taken from the **train split only** and reused for valid/test (the original code re-fitted knots per split, so the three splits were mapped by different feature maps); each Bernstein block is SVD-whitened on train (the basis spans the constant function → exact cross-block collinearity, condition number ~1e15) and rescaled to unit variance so that plain SGD solvers converge.
 * **Group-lasso reshaping fix.** The original proximal step reshaped the classification weight matrix wrongly (mixing classes and splitting covariates across groups); groups are now formed as contiguous `spline_dim` blocks per output.
-
-## 📁 Experimental Results
-
-Paper-scale simulations (`n=2000`, `p=100`, `seed=1`; regression 1000 epochs, classification 500 epochs; MAM vs. unweighted ERM baseline with the same solver):
-
-| Scenario | Task | Metric | MAM | ERM Baseline | Improvement |
-| --- | --- | --- | --- | --- | --- |
-| ε^A (`mean` noise) | regression | Test MSE | **0.0151** | 0.0443 | −66% |
-| ε^B (`modal` noise) | regression | Test MSE | **0.0048** | 0.2733 | −98% |
-| ε^C (`studentT` noise) | regression | Test MSE | **0.0068** | 0.0598 | −89% |
-| Class imbalance (ratio 0.15) | classification | Test Acc | **0.9455** | 0.8825 | +6.3 pt |
-| Label corruption (15%) | classification | Test Acc | **0.9355** | 0.8345 | +10.1 pt |
-| Imbalance + corruption (multi) | classification | Test Acc | **0.7225** | 0.6515 | +7.1 pt |
-
-All six scenarios confirm the paper's qualitative claim: the meta-learned sample weights make the sparse additive model **significantly more robust** to heavy-tailed/shifted noise and to label noise/class imbalance than an unweighted fit. Full logs are available under `demo_MAM/logs/sim_*.txt`.
 
 ## 🧪 Testing
 
