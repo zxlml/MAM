@@ -1,7 +1,8 @@
-# Meta Additive Models (MAM)
+# Meta Additive Model: Interpretable Sparse Learning With Auto Weighting
 
 **English** | [简体中文](README_zh.md)
 
+[![arXiv](https://img.shields.io/badge/arXiv-2604.20111-b31b1b)](https://arxiv.org/abs/2604.20111)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-red)](https://pytorch.org/)
 [![Tests](https://img.shields.io/badge/Tests-45%20passed-brightgreen)](demo_MAM/tests)
@@ -163,3 +164,16 @@ python -m pytest tests -q        # 45 tests: spline basis, data generation, prox
 
 * [MW-Net: Meta-Weight-Net](https://github.com/xjtushujun/meta-weight-net) — the bi-level optimization engineering this project borrows from.
 * [TSpAM: Tilted Sparse Additive Models (ICML 2023)](https://dl.acm.org/doi/abs/10.5555/3618408.3619888) — the simulation data generation protocols.
+
+## 📚 Citation
+
+If you find this work useful, please cite the paper:
+
+```bibtex
+@article{zhang2026meta,
+  title   = {Meta Additive Model: Interpretable Sparse Learning With Auto Weighting},
+  author  = {Zhang, Xuelin and Liu, Xinyue and Wu, Lingjuan and Chen, Hong},
+  journal = {arXiv preprint arXiv:2604.20111},
+  year    = {2026}
+}
+```
